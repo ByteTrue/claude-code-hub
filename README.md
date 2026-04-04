@@ -8,9 +8,9 @@
 
 **🚀 智能 AI API 代理中转服务平台｜面向团队的多供应商统一接入、弹性调度与精细化运营中心**
 
-[![Container Image](https://img.shields.io/badge/ghcr.io-ding113%2Fclaude--code--hub-181717?logo=github)](https://github.com/ding113/claude-code-hub/pkgs/container/claude-code-hub)
+[![Container Image](https://img.shields.io/badge/ghcr.io-ding113%2Fclaude--code--hub-181717?logo=github)](https://github.com/ByteTrue/claude-code-hub/pkgs/container/claude-code-hub)
 [![License](https://img.shields.io/github/license/ding113/claude-code-hub)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/ding113/claude-code-hub)](https://github.com/ding113/claude-code-hub/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/ding113/claude-code-hub)](https://github.com/ByteTrue/claude-code-hub/stargazers)
 [![Telegram Group](https://img.shields.io/badge/Telegram-交流群-blue?logo=telegram)](https://t.me/ygxz_group)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ding113/claude-code-hub)
 
@@ -124,7 +124,7 @@ AIGoCode 为 CCH 的用户提供了特别福利，通过此链接注册的用户
 
 ```bash
 # 下载并运行部署脚本
-curl -fsSL https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.sh -o deploy.sh
+curl -fsSL https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.sh -o deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -132,7 +132,7 @@ chmod +x deploy.sh
 或者使用 wget：
 
 ```bash
-wget https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.sh
+wget https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -141,7 +141,7 @@ chmod +x deploy.sh
 
 ```powershell
 # 下载并运行部署脚本
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.ps1" -OutFile "deploy.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.ps1" -OutFile "deploy.ps1"
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 .\deploy.ps1
 ```
@@ -156,8 +156,8 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 脚本会提示选择部署分支：
 
-- `main`（默认）：稳定版本，推荐生产环境使用
-- `dev`：开发版本，包含最新功能，用于测试
+- `release`（默认）：fork 的开发/发布分支，推荐日常部署使用
+- `main`：上游同步镜像分支，仅用于对比或维护，不建议常规部署
 
 **重要提示：**
 
@@ -169,7 +169,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 1. **克隆项目并配置环境**
 
    ```bash
-   git clone https://github.com/ding113/claude-code-hub.git
+   git clone https://github.com/ByteTrue/claude-code-hub.git
    cd claude-code-hub
    cp .env.example .env
    ```

@@ -2,7 +2,14 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { APP_VERSION, compareVersions, GITHUB_REPO } from "@/lib/version";
+import {
+  APP_VERSION,
+  compareVersions,
+  GITHUB_RELEASES_URL,
+  GITHUB_REPO,
+  GITHUB_REPO_URL,
+  RELEASE_BRANCH,
+} from "@/lib/version";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +52,7 @@ function normalizeVersionForDisplay(version: string): string {
     return `v${trimmed.slice(1)}`;
   }
 
-  // Only add "v" prefix for semver-like strings; keep other values (e.g. "dev") as-is.
+  // Only add "v" prefix for semver-like strings; keep branch preview builds as-is.
   if (/^\d+(?:\.\d+)*(?:[-+].+)?$/.test(trimmed)) {
     return `v${trimmed}`;
   }
@@ -53,14 +60,13 @@ function normalizeVersionForDisplay(version: string): string {
   return trimmed;
 }
 
-function isDevBuild(version: string): boolean {
-  return /^dev(?:-|$)/i.test(version.trim());
-}
-
-function parseDevBuildShortSha(version: string): string | null {
-  const match = version.trim().match(/^dev-([0-9a-f]{7,40})$/i);
+function parseBranchBuild(version: string): { branch: string; shortSha: string } | null {
+  const match = version.trim().match(/^([a-z0-9-]+)-([0-9a-f]{7,40})$/i);
   if (!match) return null;
-  return match[1].slice(0, 7).toLowerCase();
+  return {
+    branch: match[1].toLowerCase(),
+    shortSha: match[2].slice(0, 7).toLowerCase(),
+  };
 }
 
 async function readLocalVersionFile(): Promise<string | null> {
@@ -164,7 +170,7 @@ async function fetchBranchHeadCommit(branch: string): Promise<{
 
 async function fetchLatestVersionFromVersionFile(): Promise<string | null> {
   const response = await fetch(
-    `https://raw.githubusercontent.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/main/VERSION`,
+    `https://raw.githubusercontent.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/${encodeURIComponent(RELEASE_BRANCH)}/VERSION`,
     {
       headers: {
         "User-Agent": USER_AGENT,
@@ -192,8 +198,7 @@ async function getLatestVersionInfo(): Promise<LatestVersionInfo | null> {
 
       return {
         latest,
-        // 使用通用 releases 页面避免 tag 不存在导致 404
-        releaseUrl: `https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/releases`,
+        releaseUrl: GITHUB_RELEASES_URL,
       };
     }
 
@@ -211,8 +216,7 @@ async function getLatestVersionInfo(): Promise<LatestVersionInfo | null> {
 
     return {
       latest,
-      // 使用通用 releases 页面避免 tag 不存在导致 404
-      releaseUrl: `https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/releases`,
+      releaseUrl: GITHUB_RELEASES_URL,
     };
   }
 }
@@ -225,19 +229,14 @@ export async function GET() {
   try {
     const current = await getCurrentVersion();
 
-    if (isDevBuild(current)) {
-      const currentShortSha = parseDevBuildShortSha(current);
-      const latestCommit = await fetchBranchHeadCommit("dev");
-      const latest = `dev-${latestCommit.shortSha}`;
-
-      const hasUpdate = currentShortSha
-        ? currentShortSha !== latestCommit.shortSha
-        : current.trim().toLowerCase() !== latest.toLowerCase();
-
-      const compareUrl =
-        currentShortSha && hasUpdate
-          ? `https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}/compare/${currentShortSha}...${latestCommit.shortSha}`
-          : latestCommit.commitUrl;
+    const branchBuild = parseBranchBuild(current);
+    if (branchBuild) {
+      const latestCommit = await fetchBranchHeadCommit(branchBuild.branch);
+      const latest = `${branchBuild.branch}-${latestCommit.shortSha}`;
+      const hasUpdate = branchBuild.shortSha !== latestCommit.shortSha;
+      const compareUrl = hasUpdate
+        ? `${GITHUB_REPO_URL}/compare/${branchBuild.shortSha}...${latestCommit.shortSha}`
+        : latestCommit.commitUrl;
 
       return NextResponse.json({
         current,

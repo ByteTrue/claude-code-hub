@@ -8,10 +8,13 @@ function mockJsonResponse(data: unknown, init?: ResponseInit) {
   });
 }
 
-describe("/api/version (dev)", () => {
+describe("/api/version (branch preview)", () => {
   beforeEach(() => {
     vi.resetModules();
-    process.env.NEXT_PUBLIC_APP_VERSION = "dev-aaaaaaa";
+    process.env.NEXT_PUBLIC_APP_VERSION = "release-aaaaaaa";
+    process.env.GITHUB_REPO_OWNER = "ByteTrue";
+    process.env.GITHUB_REPO_NAME = "claude-code-hub";
+    process.env.RELEASE_BRANCH = "release";
   });
 
   afterEach(() => {
@@ -19,17 +22,20 @@ describe("/api/version (dev)", () => {
     delete process.env.NEXT_PUBLIC_APP_VERSION;
     delete process.env.GITHUB_TOKEN;
     delete process.env.GH_TOKEN;
+    delete process.env.GITHUB_REPO_OWNER;
+    delete process.env.GITHUB_REPO_NAME;
+    delete process.env.RELEASE_BRANCH;
   });
 
-  test("应在 dev HEAD 不同时提示更新", async () => {
+  test("应在 release HEAD 不同时提示更新", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === "string" ? input : input.toString();
-        if (url.includes("/commits/dev")) {
+        if (url.includes("/commits/release")) {
           return mockJsonResponse({
             sha: "bbbbbbbcccccccccccccccccccccccccccccccccc",
-            html_url: "https://github.com/ding113/claude-code-hub/commit/bbbbbbb",
+            html_url: "https://github.com/ByteTrue/claude-code-hub/commit/bbbbbbb",
             commit: { committer: { date: "2025-12-21T00:00:00Z" } },
           });
         }
@@ -42,24 +48,24 @@ describe("/api/version (dev)", () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    expect(data.current).toBe("dev-aaaaaaa");
-    expect(data.latest).toBe("dev-bbbbbbb");
+    expect(data.current).toBe("release-aaaaaaa");
+    expect(data.latest).toBe("release-bbbbbbb");
     expect(data.hasUpdate).toBe(true);
     expect(data.releaseUrl).toContain("/compare/aaaaaaa...bbbbbbb");
     expect(data.publishedAt).toBe("2025-12-21T00:00:00Z");
   });
 
-  test("应在 dev HEAD 相同时不提示更新", async () => {
-    process.env.NEXT_PUBLIC_APP_VERSION = "dev-bbbbbbb";
+  test("应在 release HEAD 相同时不提示更新", async () => {
+    process.env.NEXT_PUBLIC_APP_VERSION = "release-bbbbbbb";
 
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
         const url = typeof input === "string" ? input : input.toString();
-        if (url.includes("/commits/dev")) {
+        if (url.includes("/commits/release")) {
           return mockJsonResponse({
             sha: "bbbbbbbcccccccccccccccccccccccccccccccccc",
-            html_url: "https://github.com/ding113/claude-code-hub/commit/bbbbbbb",
+            html_url: "https://github.com/ByteTrue/claude-code-hub/commit/bbbbbbb",
             commit: { committer: { date: "2025-12-21T00:00:00Z" } },
           });
         }
@@ -72,9 +78,9 @@ describe("/api/version (dev)", () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    expect(data.current).toBe("dev-bbbbbbb");
-    expect(data.latest).toBe("dev-bbbbbbb");
+    expect(data.current).toBe("release-bbbbbbb");
+    expect(data.latest).toBe("release-bbbbbbb");
     expect(data.hasUpdate).toBe(false);
-    expect(data.releaseUrl).toBe("https://github.com/ding113/claude-code-hub/commit/bbbbbbb");
+    expect(data.releaseUrl).toBe("https://github.com/ByteTrue/claude-code-hub/commit/bbbbbbb");
   });
 });

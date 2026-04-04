@@ -1,19 +1,18 @@
-name: Non-Main Branch CI/CD
+name: Release and Preview Branch CI/CD
 
 on:
   push:
     branches:
-      - '**'        # 匹配所有分支
-      - '!main'     # 排除 main 分支
+      - "**"
+      - "!main"
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  dev-build-deploy:
+  branch-build-deploy:
     runs-on: ubuntu-latest
-    # 跳过由GitHub Actions创建的提交，避免死循环
     if: github.event.pusher.name != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
     steps:
       - name: Checkout code
@@ -25,19 +24,13 @@ jobs:
       - name: Prepare branch info and tags
         id: branch_info
         run: |
-          # 获取分支名（去掉 refs/heads/ 前缀）
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-
-          # 处理分支名：转小写，替换 / 为 -，只保留字母数字和连字符
           SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
-
-          # 获取短 commit hash
           SHORT_SHA=$(git rev-parse --short=7 HEAD)
 
-          # 根据是否是 dev 分支决定 tag 策略
-          if [ "$BRANCH_NAME" = "dev" ]; then
-            BASE_TAG="dev"
-            VERSIONED_TAG="dev-$SHORT_SHA"
+          if [ "$BRANCH_NAME" = "release" ]; then
+            BASE_TAG="release"
+            VERSIONED_TAG="release-$SHORT_SHA"
           else
             BASE_TAG="$SAFE_BRANCH_NAME"
             VERSIONED_TAG="$SAFE_BRANCH_NAME-$SHORT_SHA"
@@ -48,11 +41,6 @@ jobs:
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
           echo "base_tag=$BASE_TAG" >> $GITHUB_OUTPUT
           echo "versioned_tag=$VERSIONED_TAG" >> $GITHUB_OUTPUT
-
-          echo "Building from branch: $BRANCH_NAME"
-          echo "Safe branch name: $SAFE_BRANCH_NAME"
-          echo "Base tag: $BASE_TAG"
-          echo "Versioned tag: $VERSIONED_TAG"
 
       - name: Setup Node.js for formatting
         uses: actions/setup-node@v4
@@ -71,24 +59,24 @@ jobs:
 
       - name: Commit formatted code
         run: |
-          # 配置git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # 添加所有更改（格式化后的代码）
           git add -A
-
-          # 排除 .github/ 目录的更改（workflow 文件不需要自动提交，且需要特殊权限）
           git restore --staged .github/ 2>/dev/null || true
 
-          # 检查是否有更改需要提交
           if git diff --cached --quiet; then
             echo "No changes to commit"
-          else
-            # 提交格式化后的代码
-            git commit -m "chore: format code (${{ steps.branch_info.outputs.versioned_tag }})"
-            git push origin ${{ steps.branch_info.outputs.branch_name }}
+            exit 0
           fi
+
+          if [ "${{ steps.branch_info.outputs.branch_name }}" = "release" ]; then
+            echo "Formatting changes detected on release branch; skipping auto-push"
+            git diff --cached --stat
+            exit 0
+          fi
+
+          git commit -m "chore: format code (${{ steps.branch_info.outputs.versioned_tag }})"
+          git push origin ${{ steps.branch_info.outputs.branch_name }}
 
       - name: Prepare image names
         id: image_names
@@ -96,7 +84,6 @@ jobs:
           GHCR_IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/claude-code-hub" | tr '[:upper:]' '[:lower:]')
           echo "ghcr_image=${GHCR_IMAGE}" >> "$GITHUB_OUTPUT"
 
-      # Docker构建步骤
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -128,16 +115,3 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Build summary
-        run: |
-          echo "Build completed successfully!"
-          echo ""
-          echo "📦 Branch: ${{ steps.branch_info.outputs.branch_name }}"
-          echo "📦 Docker Images:"
-          echo "  - ${{ steps.image_names.outputs.ghcr_image }}:${{ steps.branch_info.outputs.versioned_tag }}"
-          echo "  - ${{ steps.image_names.outputs.ghcr_image }}:${{ steps.branch_info.outputs.base_tag }}"
-          echo ""
-          echo "🚀 Usage:"
-          echo "  docker pull ${{ steps.image_names.outputs.ghcr_image }}:${{ steps.branch_info.outputs.base_tag }}"
-          echo "  docker pull ${{ steps.image_names.outputs.ghcr_image }}:${{ steps.branch_info.outputs.versioned_tag }}"

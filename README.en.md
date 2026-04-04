@@ -8,9 +8,9 @@
 
 **🚀 Intelligent AI API relay platform — the control center for multi-provider onboarding, elastic routing, and granular operations**
 
-[![Container Image](https://img.shields.io/badge/ghcr.io-ding113%2Fclaude--code--hub-181717?logo=github)](https://github.com/ding113/claude-code-hub/pkgs/container/claude-code-hub)
+[![Container Image](https://img.shields.io/badge/ghcr.io-ding113%2Fclaude--code--hub-181717?logo=github)](https://github.com/ByteTrue/claude-code-hub/pkgs/container/claude-code-hub)
 [![License](https://img.shields.io/github/license/ding113/claude-code-hub)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/ding113/claude-code-hub)](https://github.com/ding113/claude-code-hub/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/ding113/claude-code-hub)](https://github.com/ByteTrue/claude-code-hub/stargazers)
 [![Telegram Group](https://img.shields.io/badge/Telegram-Join%20Group-blue?logo=telegram)](https://t.me/ygxz_group)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ding113/claude-code-hub)
 
@@ -124,7 +124,7 @@ The one-click deployment script **automatically handles** all of the following:
 
 ```bash
 # Download and run the deployment script
-curl -fsSL https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.sh -o deploy.sh
+curl -fsSL https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.sh -o deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -132,7 +132,7 @@ chmod +x deploy.sh
 Or using wget:
 
 ```bash
-wget https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.sh
+wget https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -141,7 +141,7 @@ chmod +x deploy.sh
 
 ```powershell
 # Download and run the deployment script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ding113/claude-code-hub/main/scripts/deploy.ps1" -OutFile "deploy.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ByteTrue/claude-code-hub/release/scripts/deploy.ps1" -OutFile "deploy.ps1"
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 .\deploy.ps1
 ```
@@ -156,8 +156,8 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 The script will prompt you to select a deployment branch:
 
-- `main` (default): Stable release, recommended for production
-- `dev`: Development version with latest features, for testing
+- `release` (default): the fork's development and release branch, recommended for normal deployments
+- `main`: upstream sync mirror, useful for comparison or maintenance only
 
 **Important Notes:**
 
@@ -169,7 +169,7 @@ The script will prompt you to select a deployment branch:
 1. **Clone and configure**
 
    ```bash
-   git clone https://github.com/ding113/claude-code-hub.git
+   git clone https://github.com/ByteTrue/claude-code-hub.git
    cd claude-code-hub
    cp .env.example .env
    ```

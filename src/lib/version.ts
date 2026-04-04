@@ -1,5 +1,7 @@
 import packageJson from "../../package.json";
 
+const configuredRepository = process.env.GITHUB_REPOSITORY?.split("/");
+
 /**
  * 应用版本配置
  * 优先级: NEXT_PUBLIC_APP_VERSION > package.json version
@@ -11,9 +13,25 @@ export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || `v${packageJso
  * 用于获取最新版本
  */
 export const GITHUB_REPO = {
-  owner: "ding113",
-  repo: "claude-code-hub",
+  owner:
+    process.env.NEXT_PUBLIC_GITHUB_REPO_OWNER?.trim() ||
+    process.env.GITHUB_REPO_OWNER?.trim() ||
+    configuredRepository?.[0] ||
+    "ByteTrue",
+  repo:
+    process.env.NEXT_PUBLIC_GITHUB_REPO_NAME?.trim() ||
+    process.env.GITHUB_REPO_NAME?.trim() ||
+    configuredRepository?.[1] ||
+    "claude-code-hub",
 };
+
+export const RELEASE_BRANCH =
+  process.env.NEXT_PUBLIC_RELEASE_BRANCH?.trim() || process.env.RELEASE_BRANCH?.trim() || "release";
+
+export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}`;
+export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
+export const GITHUB_LICENSE_URL = `${GITHUB_REPO_URL}/blob/main/LICENSE`;
+export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
 
 type SemverPrereleaseId = { kind: "num"; value: number } | { kind: "str"; value: string };
 

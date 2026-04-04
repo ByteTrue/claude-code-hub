@@ -6,7 +6,7 @@
 [CmdletBinding()]
 param(
     [Alias("b")]
-    [ValidateSet("main", "dev", "")]
+    [ValidateSet("release", "")]
     [string]$Branch = "",
     
     [Alias("p")]
@@ -41,7 +41,7 @@ $script:ADMIN_TOKEN = ""
 $script:DB_PASSWORD = ""
 $script:DEPLOY_DIR = "C:\ProgramData\claude-code-hub"
 $script:IMAGE_TAG = "latest"
-$script:BRANCH_NAME = "main"
+$script:BRANCH_NAME = "release"
 $script:APP_PORT = "23000"
 $script:ENABLE_CADDY = $false
 $script:DOMAIN_ARG = ""
@@ -55,7 +55,7 @@ Claude Code Hub - One-Click Deployment Script v$VERSION
 Usage: .\deploy.ps1 [OPTIONS]
 
 Options:
-  -Branch, -b <name>         Branch to deploy: main (default) or dev
+  -Branch, -b <name>         Branch to deploy: release only
   -Port, -p <port>           App external port (default: 23000)
   -AdminToken, -t <token>    Custom admin token (default: auto-generated)
   -DeployDir, -d <path>      Custom deployment directory
@@ -68,14 +68,14 @@ Options:
 Examples:
   .\deploy.ps1                                    # Interactive deployment
   .\deploy.ps1 -Yes                               # Non-interactive with defaults
-  .\deploy.ps1 -Branch dev -Port 8080 -Yes        # Deploy dev branch on port 8080
+  .\deploy.ps1 -Branch release -Port 8080 -Yes    # Deploy release branch on port 8080
   .\deploy.ps1 -AdminToken "my-secure-token" -Yes # Use custom admin token
   .\deploy.ps1 -Domain hub.example.com -Yes       # Deploy with Caddy HTTPS
   .\deploy.ps1 -EnableCaddy -Yes                  # Deploy with Caddy HTTP-only
   .\deploy.ps1 -Yes                               # Update existing deployment (auto-detected)
   .\deploy.ps1 -ForceNew -Yes                     # Force fresh install even if deployment exists
 
-For more information, visit: https://github.com/ding113/claude-code-hub
+For more information, visit: https://github.com/ByteTrue/claude-code-hub
 "@
     Write-Host $helpText
 }
@@ -83,12 +83,9 @@ For more information, visit: https://github.com/ding113/claude-code-hub
 function Initialize-Parameters {
     # Apply CLI parameters
     if ($Branch) {
-        if ($Branch -eq "main") {
+        if ($Branch -eq "release") {
             $script:IMAGE_TAG = "latest"
-            $script:BRANCH_NAME = "main"
-        } elseif ($Branch -eq "dev") {
-            $script:IMAGE_TAG = "dev"
-            $script:BRANCH_NAME = "dev"
+            $script:BRANCH_NAME = "release"
         }
     }
     
@@ -203,14 +200,13 @@ function Select-Branch {
     }
     
     if ($Yes) {
-        Write-ColorOutput "Non-interactive mode: using default branch (main)" -Type Info
+        Write-ColorOutput "Non-interactive mode: using default branch (release)" -Type Info
         return
     }
 
     Write-Host ""
     Write-ColorOutput "Please select the branch to deploy:" -Type Info
-    Write-Host "  1) main   (Stable release - recommended for production)" -ForegroundColor Green
-    Write-Host "  2) dev    (Latest features - for testing)" -ForegroundColor Yellow
+    Write-Host "  1) release (Default fork release branch - recommended for deployment)" -ForegroundColor Green
     Write-Host ""
     
     while ($true) {
@@ -222,18 +218,12 @@ function Select-Branch {
         switch ($choice) {
             "1" {
                 $script:IMAGE_TAG = "latest"
-                $script:BRANCH_NAME = "main"
-                Write-ColorOutput "Selected branch: main (image tag: latest)" -Type Success
-                break
-            }
-            "2" {
-                $script:IMAGE_TAG = "dev"
-                $script:BRANCH_NAME = "dev"
-                Write-ColorOutput "Selected branch: dev (image tag: dev)" -Type Success
+                $script:BRANCH_NAME = "release"
+                Write-ColorOutput "Selected branch: release (image tag: latest)" -Type Success
                 break
             }
             default {
-                Write-ColorOutput "Invalid choice. Please enter 1 or 2." -Type Error
+                Write-ColorOutput "Invalid choice. Please enter 1." -Type Error
                 continue
             }
         }
@@ -413,7 +403,7 @@ services:
       start_period: 5s
 
   app:
-    image: ghcr.io/ding113/claude-code-hub:$IMAGE_TAG
+    image: ghcr.io/bytetrue/claude-code-hub:$IMAGE_TAG
     container_name: claude-code-hub-app-$SUFFIX
     depends_on:
       postgres:

@@ -24,6 +24,12 @@ describe("版本比较", () => {
     expect(compareVersions("v1.2.3+build.2", "v1.2.3+build.1")).toBe(0);
   });
 
+  test("应正确比较 fork 版本标签", () => {
+    expect(compareVersions("v0.6.6-fork.1", "v0.6.6-fork.2")).toBe(1);
+    expect(compareVersions("v0.6.6-fork.2", "v0.6.6-fork.1")).toBe(-1);
+    expect(compareVersions("v0.6.6", "v0.6.6-fork.1")).toBe(-1);
+  });
+
   test("无法解析的版本应 Fail Open（视为相等）", () => {
     expect(compareVersions("dev", "v1.0.0")).toBe(0);
     expect(isVersionLess("dev", "v1.0.0")).toBe(false);

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { GITHUB_ISSUES_URL } from "@/lib/version";
 
 export type SettingsNavIconName =
   | "settings"
@@ -86,7 +87,7 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     iconName: "help-circle",
   },
   {
-    href: "https://github.com/ding113/claude-code-hub/issues",
+    href: GITHUB_ISSUES_URL,
     labelKey: "nav.feedback",
     label: "Feedback",
     external: true,

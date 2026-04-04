@@ -4,8 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Info
 
-- **Source**: https://github.com/ding113/claude-code-hub
-- **PR Target Branch**: `dev` (all pull requests must target the dev branch)
+- **Source**: https://github.com/ByteTrue/claude-code-hub
+- **Upstream Source**: https://github.com/ding113/claude-code-hub
+- **PR Target Branch**: `release` (all pull requests must target the release branch)
+- **Branch Roles**: `main` is upstream-sync only; `release` is the default development/release branch
 
 ## Critical Rules
 

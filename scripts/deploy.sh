@@ -36,7 +36,7 @@ DB_PASSWORD=""
 DEPLOY_DIR=""
 OS_TYPE=""
 IMAGE_TAG="latest"
-BRANCH_NAME="main"
+BRANCH_NAME="release"
 APP_PORT="23000"
 UPDATE_MODE=false
 FORCE_NEW=false
@@ -57,7 +57,7 @@ Claude Code Hub - One-Click Deployment Script v${VERSION}
 Usage: $0 [OPTIONS]
 
 Options:
-  -b, --branch <name>        Branch to deploy: main (default) or dev
+  -b, --branch <name>        Branch to deploy: release only
   -p, --port <port>          App external port (default: 23000)
   -t, --admin-token <token>  Custom admin token (default: auto-generated)
   -d, --deploy-dir <path>    Custom deployment directory
@@ -70,14 +70,14 @@ Options:
 Examples:
   $0                                    # Interactive deployment
   $0 -y                                 # Non-interactive with defaults
-  $0 -b dev -p 8080 -y                  # Deploy dev branch on port 8080
+  $0 -b release -p 8080 -y              # Deploy release branch on port 8080
   $0 -t "my-secure-token" -y            # Use custom admin token
   $0 --domain hub.example.com -y        # Deploy with Caddy HTTPS
   $0 --enable-caddy -y                  # Deploy with Caddy HTTP-only
   $0 -y                                 # Update existing deployment (auto-detected)
   $0 --force-new -y                     # Force fresh install even if deployment exists
 
-For more information, visit: https://github.com/ding113/claude-code-hub
+For more information, visit: https://github.com/ByteTrue/claude-code-hub
 EOF
 }
 
@@ -173,16 +173,12 @@ validate_inputs() {
     # Validate branch
     if [[ -n "$BRANCH_ARG" ]]; then
         case "$BRANCH_ARG" in
-            main)
+            release)
                 IMAGE_TAG="latest"
-                BRANCH_NAME="main"
-                ;;
-            dev)
-                IMAGE_TAG="dev"
-                BRANCH_NAME="dev"
+                BRANCH_NAME="release"
                 ;;
             *)
-                log_error "Invalid branch: $BRANCH_ARG (must be 'main' or 'dev')"
+                log_error "Invalid branch: $BRANCH_ARG (must be 'release')"
                 exit 1
                 ;;
         esac
@@ -235,14 +231,13 @@ select_branch() {
     fi
 
     if [[ "$NON_INTERACTIVE" == true ]]; then
-        log_info "Non-interactive mode: using default branch (main)"
+        log_info "Non-interactive mode: using default branch (release)"
         return
     fi
 
     echo ""
     echo -e "${BLUE}Please select the branch to deploy:${NC}"
-    echo -e "  ${GREEN}1)${NC} main   (Stable release - recommended for production)"
-    echo -e "  ${YELLOW}2)${NC} dev    (Latest features - for testing)"
+    echo -e "  ${GREEN}1)${NC} release (Default fork release branch - recommended for deployment)"
     echo ""
     
     local choice
@@ -253,18 +248,12 @@ select_branch() {
         case $choice in
             1)
                 IMAGE_TAG="latest"
-                BRANCH_NAME="main"
-                log_success "Selected branch: main (image tag: latest)"
-                break
-                ;;
-            2)
-                IMAGE_TAG="dev"
-                BRANCH_NAME="dev"
-                log_success "Selected branch: dev (image tag: dev)"
+                BRANCH_NAME="release"
+                log_success "Selected branch: release (image tag: latest)"
                 break
                 ;;
             *)
-                log_error "Invalid choice. Please enter 1 or 2."
+                log_error "Invalid choice. Please enter 1."
                 ;;
         esac
     done
@@ -498,7 +487,7 @@ services:
       start_period: 5s
 
   app:
-    image: ghcr.io/ding113/claude-code-hub:${IMAGE_TAG}
+    image: ghcr.io/bytetrue/claude-code-hub:${IMAGE_TAG}
     container_name: claude-code-hub-app-${SUFFIX}
     depends_on:
       postgres:

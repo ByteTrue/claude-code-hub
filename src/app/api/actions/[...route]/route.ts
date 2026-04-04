@@ -35,6 +35,7 @@ import * as userActions from "@/actions/users";
 import * as webhookTargetActions from "@/actions/webhook-targets";
 import { createActionRoute } from "@/lib/api/action-adapter-openapi";
 import { NOTIFICATION_JOB_TYPES } from "@/lib/constants/notification.constants";
+import { GITHUB_ISSUES_URL, GITHUB_LICENSE_URL, GITHUB_REPO_URL } from "@/lib/version";
 // 导入 validation schemas
 import {
   CreateProviderSchema,
@@ -2079,11 +2080,11 @@ HTTP 状态码:
     `,
     contact: {
       name: "项目维护团队",
-      url: "https://github.com/ding113/claude-code-hub/issues",
+      url: GITHUB_ISSUES_URL,
     },
     license: {
       name: "MIT License",
-      url: "https://github.com/ding113/claude-code-hub/blob/main/LICENSE",
+      url: GITHUB_LICENSE_URL,
     },
   },
   servers: getOpenAPIServers(),
@@ -2131,7 +2132,7 @@ HTTP 状态码:
   ],
   externalDocs: {
     description: "GitHub 仓库 - 查看完整文档、功能介绍和部署指南",
-    url: "https://github.com/ding113/claude-code-hub",
+    url: GITHUB_REPO_URL,
   },
 });
 

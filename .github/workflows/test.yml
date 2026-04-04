@@ -2,9 +2,9 @@ name: 🧪 Test Suite
 
 on:
   push:
-    branches: [main, dev]
+    branches: [release, main]
   pull_request:
-    branches: [main, dev]
+    branches: [release, main]
 
 # 取消同一分支的进行中的工作流
 concurrency:
